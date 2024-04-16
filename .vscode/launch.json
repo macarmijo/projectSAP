@@ -1,0 +1,12 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug VBS with CScript",
+            "type": "vbs",
+            "request": "launch",
+            "program": "${workspaceFolder}/pruebaFuncionamientoExcel.vbs",
+       
+        }
+    ]
+}
