@@ -5,7 +5,7 @@
             "name": "Debug VBS with CScript",
             "type": "vbs",
             "request": "launch",
-            "program": "${workspaceFolder}/pruebaFuncionamientoExcel.vbs",
+            "program": "${workspaceFolder}/ZC-consumirRepuestos.vbs",
        
         }
     ]

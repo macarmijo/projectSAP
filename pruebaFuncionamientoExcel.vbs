@@ -31,7 +31,7 @@ Set sheet1 = objWorkbook.Worksheets(1)
 Set sheet2 = objWorkbook.Worksheets(2)
 
 
-   ' Función para buscar una palabra en un texto
+' Función para buscar una palabra en un texto
 Function buscarPalabra(texto, palabra1, palabra2, palabra3)
    If InStr(texto, palabra1) > 0 Or InStr(texto, palabra2) > 0 Or InStr(texto, palabra3) > 0 Then
       buscarPalabra = True
@@ -65,7 +65,8 @@ For i = 2 to sheet2.UsedRange.Rows.Count
    sheet2.Cells(i, 4).Value = session.findById("wnd[0]/usr/subSUB_ALL:SAPLCOIH:3001/ssubSUB_LEVEL:SAPLCOIH:1100/tabsTS_1100/tabpIHKZ/ssubSUB_AUFTRAG:SAPLCOIH:1120/subOBJECT:SAPLCOIH:7170/ctxtCAUFVD-SERIALNR").text
 
    ' Buscar las palabras en el texto utilizando la función buscarPalabra
-   If buscarPalabra(sheet2.Cells(i, 3), "ARGON", "HT70", "5100C") Then
+   'fx, triad, ft10, fx8, 560 , wem : 501sx y 200se tienen Checklist - el resto no
+   If buscarPalabra(sheet2.Cells(i, 3), "FX", "", "5100C") Then
       sheet2.Cells(i, 5).Value = "SI"
       sheet2.Cells(i, 6).Value = "NO"
    Else

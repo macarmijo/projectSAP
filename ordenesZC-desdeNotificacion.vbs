@@ -40,7 +40,7 @@ rigel = Trim(CStr(sheet1.Cells(5, 2).Value))
 pts = Trim(CStr(sheet1.Cells(6, 2).Value))
 hsTrabajadas = Trim(CStr(objSheet.Cells(7, 2).Value))
 
-For i = 2 to objSheet.UsedRange.Rows.Count
+For i = 2 to sheet2.UsedRange.Rows.Count
    notif = Trim(CStr(sheet2.Cells(i, 1).Value))
    OrderService = Trim(CStr(sheet2.Cells(i, 2).Value))
    model = Trim(CStr(sheet2.Cells(i, 3).Value))
