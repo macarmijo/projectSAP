@@ -1,35 +1,25 @@
-Sub getOSfromNotif()
-    'defino variables
+Private Sub CommandButton1_Click()
     Dim SapGuiAuto As Object, SapGuiApp As Object, Connection As Object, session As Object
-    Dim Sheet1 As Worksheet
-    Dim valorCelda As String
-    Dim i As Long
-    Dim notif As String, os As String
+    Dim r As Range, c As Range
+    Dim lastRow As Long
     
-    'config integracion SAP - usar SAP abierto!
+    ' Set up SAP GUI connection
     Set SapGuiAuto = GetObject("SAPGUI")
     Set SapGuiApp = SapGuiAuto.GetScriptingEngine
     Set Connection = SapGuiApp.Children(0)
     Set session = Connection.Children(0)
-
-    Set Sheet1 = ThisWorkbook.Sheets(1)
     
-    For i = 2 To Sheet1.UsedRange.Rows.Count
-        notif = Trim(CStr(Sheet1.Cells(i, 1).Value))
-       Debug.Print notif
-       ' Start the IW52 transaction
-        session.StartTransaction ("IW52")
-        
-        ' Enter the notification number in SAP
-        session.findById("wnd[0]/usr/ctxtRIWO00-QMNUM").Text = notif
+    ' Find the last row with data in column A
+    lastRow = ThisWorkbook.Sheets(1).Cells(ThisWorkbook.Sheets(1).Rows.Count, "A").End(xlUp).Row
+    
+    ' Set the range from A2 to the last used row in column A
+    Set r = ThisWorkbook.Sheets(1).Range("A2:A" & lastRow)
+    
+    For Each c In r
+        session.StartTransaction ("IW53")
+        session.findById("wnd[0]/usr/ctxtRIWO00-QMNUM").Text = c.Value
         session.findById("wnd[0]").sendVKey 0
         
-        ' Get the OS number from SAP and save it in Excel
-        os = Trim(CStr(session.findById("wnd[0]/usr/subSCREEN_1:SAPLIQS0:1060/txtVIQMEL-AUFNR").Text))
-        Sheet1.Cells(i, 2).Value = os
-        
-        ' Move to the next row in Excel
-        session.findById("wnd[0]").sendVKey 0
-    Next i
-    
+        c.Next(1, 1).Value = session.findById("wnd[0]/usr/subSCREEN_1:SAPLIQS0:1060/txtVIQMEL-AUFNR").Text
+    Next c
 End Sub
