@@ -1,26 +1,21 @@
-'busco a partir de la notif IW52 - 
 Sub buscarOS()
-    Dim SapGuiAuto As Object, SapGuiApp As Object, Connection As Object, session As Object
+    Dim session As Object
+    Dim wsActive As Worksheet
     Dim r As Range, c As Range
     Dim lastRow As Long
-     
-    'If connection was not possible
-    On Error GoTo ErrorHandler
     
-    ' Set up SAP GUI connection
-    Set SapGuiAuto = GetObject("SAPGUI")
-    Set SapGuiApp = SapGuiAuto.GetScriptingEngine
-    Set Connection = SapGuiApp.Children(0)
-    Set session = Connection.Children(0)
-    
-    ' If connection is established, continue with the rest of the code
-    On Error GoTo 0
+    ' Fijar hoja específica para trabajar
+    Set wsActive = ThisWorkbook.Sheets("smartsheet")
     
     ' Find the last row with data in column A
     lastRow = ThisWorkbook.ActiveSheet.Cells(ThisWorkbook.ActiveSheet.Rows.Count, "A").End(xlUp).row
     
     ' Set the range from A2 to the last used row in column A
     Set r = ThisWorkbook.ActiveSheet.Range("A4:A" & lastRow)
+    
+    ' Set up SAP GUI connection
+    Set session = ObtenerSesionSAP()
+    If session Is Nothing Then Exit Sub
     
     For Each c In r
         session.StartTransaction ("IW53")
@@ -52,3 +47,5 @@ ErrorHandler:
     MsgBox "Necesitas abrir SAP.", vbCritical, "Error de Conexión"
 
 End Sub
+
+'created by Maca Armijo

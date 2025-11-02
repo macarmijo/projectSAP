@@ -1,25 +1,25 @@
-'busca nro de material a partir del nro de serie desde IQ09 o IQ03 - discrimina hasta 10 digitos
 Sub buscarNroMaterial()
-    Dim SapGuiAuto As Object, SapGuiApp As Object, Connection As Object, session As Object
+    Dim session As Object
     Dim r As Range, c As Range
     Dim lastRow As Long
-    
-    On Error GoTo ErrorHandler
+    Dim plantCov As String, plantCovZ As String, plantMdt As String, plantMdtZ As String, actType As String
     
     ' Set up SAP GUI connection
-    Set SapGuiAuto = GetObject("SAPGUI")
-    Set SapGuiApp = SapGuiAuto.GetScriptingEngine
-    Set Connection = SapGuiApp.Children(0)
-    Set session = Connection.Children(0)
+    Set session = ObtenerSesionSAP()
+    If session Is Nothing Then Exit Sub
     
-    ' If connection is established, continue with the rest of the code
-    On Error GoTo 0
-
+    ' Fijar hoja específica para trabajar
+    Set wsActive = ThisWorkbook.Sheets("smartsheet")
     ' Find the last row with data in column G (7)
-    lastRow = ThisWorkbook.ActiveSheet.Cells(ThisWorkbook.ActiveSheet.Rows.Count, "G").End(xlUp).row
-
+    lastRow = wsActive.Cells(ThisWorkbook.ActiveSheet.Rows.Count, "G").End(xlUp).row
     ' Set the range from G4 to the last used row in column G
-    Set r = ThisWorkbook.ActiveSheet.Range("G4:G" & lastRow)
+    Set r = wsActive.Range("G4:G" & lastRow)
+    
+    plantCov = Trim(CStr(ThisWorkbook.Sheets("datos").Cells(3, 8).Value))
+    plantMdt = Trim(CStr(ThisWorkbook.Sheets("datos").Cells(3, 9).Value))
+    actType = Trim(CStr(ThisWorkbook.Sheets("datos").Cells(3, 10).Value))
+    plantCovZ = Trim(CStr(ThisWorkbook.Sheets("datos").Cells(3, 11).Value))
+    plantMdtZ = Trim(CStr(ThisWorkbook.Sheets("datos").Cells(3, 12).Value))
 
     For Each c In r
         
@@ -35,12 +35,12 @@ Sub buscarNroMaterial()
         ' Input serial number
         session.findById("wnd[0]/usr/txtSERNR-LOW").Text = serialNumber
         
-        ' Input plant number to filter for Argentina
-        session.findById("wnd[0]/usr/ctxtWERK-LOW").Text = "1394"
+        ' Input plant number to filter for Specific Country
+        session.findById("wnd[0]/usr/ctxtWERK-LOW").Text = plantCov
         session.findById("wnd[0]/usr/btn%_WERK_%_APP_%-VALU_PUSH").press
-        session.findById("wnd[1]/usr/tabsTAB_STRIP/tabpSIVA/ssubSCREEN_HEADER:SAPLALDB:3010/tblSAPLALDBSINGLE/ctxtRSCSEL_255-SLOW_I[1,1]").Text = "z394"
-        session.findById("wnd[1]/usr/tabsTAB_STRIP/tabpSIVA/ssubSCREEN_HEADER:SAPLALDB:3010/tblSAPLALDBSINGLE/ctxtRSCSEL_255-SLOW_I[1,2]").Text = "1164"
-        session.findById("wnd[1]/usr/tabsTAB_STRIP/tabpSIVA/ssubSCREEN_HEADER:SAPLALDB:3010/tblSAPLALDBSINGLE/ctxtRSCSEL_255-SLOW_I[1,3]").Text = "z164"
+        session.findById("wnd[1]/usr/tabsTAB_STRIP/tabpSIVA/ssubSCREEN_HEADER:SAPLALDB:3010/tblSAPLALDBSINGLE/ctxtRSCSEL_255-SLOW_I[1,1]").Text = plantCovZ
+        session.findById("wnd[1]/usr/tabsTAB_STRIP/tabpSIVA/ssubSCREEN_HEADER:SAPLALDB:3010/tblSAPLALDBSINGLE/ctxtRSCSEL_255-SLOW_I[1,2]").Text = plantMdt
+        session.findById("wnd[1]/usr/tabsTAB_STRIP/tabpSIVA/ssubSCREEN_HEADER:SAPLALDB:3010/tblSAPLALDBSINGLE/ctxtRSCSEL_255-SLOW_I[1,3]").Text = plantMdtZ
    
         session.findById("wnd[1]/tbar[0]/btn[0]").press
         session.findById("wnd[1]/tbar[0]/btn[8]").press
@@ -77,12 +77,14 @@ Sub buscarNroMaterial()
 
     Next c
     
+    session.findById("wnd[0]/tbar[0]/btn[3]").press
+    Exit Sub
+    
     ' Display a completion message
     MsgBox "Tarea completada.", vbInformation, "Información"
     ' Return to SAP home screen
     session.findById("wnd[0]").sendVKey 15  ' VKey 15 is typically used to go back to the home screen or initial screen
-    Exit Sub
 
-ErrorHandler:
-    MsgBox "Necesitas abrir SAP.", vbCritical, "Error de Conexión"
 End Sub
+
+'created by Maca Armijo
