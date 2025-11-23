@@ -1,51 +1,80 @@
 Sub buscarOS()
+    On Error GoTo ErrorHandler
+    application.EnableCancelKey = xlErrorHandler   ' Permite que ESC genere error 18
+
     Dim session As Object
     Dim wsActive As Worksheet
-    Dim r As Range, c As Range
-    Dim lastRow As Long
-    
-    ' Fijar hoja específica para trabajar
-    Set wsActive = ThisWorkbook.Sheets("smartsheet")
-    
-    ' Find the last row with data in column A
-    lastRow = ThisWorkbook.ActiveSheet.Cells(ThisWorkbook.ActiveSheet.Rows.Count, "A").End(xlUp).row
-    
-    ' Set the range from A2 to the last used row in column A
-    Set r = ThisWorkbook.ActiveSheet.Range("A4:A" & lastRow)
-    
-    ' Set up SAP GUI connection
+    Dim nroNotif As String
+    Dim os As String
+    Dim i As Long
+
+    ' Hoja específica
+    Set wsActive = ThisWorkbook.Sheets("MP")
+
+    ' Conexión SAP
     Set session = ObtenerSesionSAP()
     If session Is Nothing Then Exit Sub
-    
-    For Each c In r
-        session.StartTransaction ("IW53")
-        session.findById("wnd[0]/usr/ctxtRIWO00-QMNUM").Text = c.Value
+
+    i = 3   ' Primera fila con datos en columna C
+
+    ' LOOP SEGURO HASTA "END"
+    Do
+        nroNotif = Trim$(CStr(wsActive.Cells(i, "C").Value))
+
+        ' Si está vacío, cortamos
+        If nroNotif = "" Then Exit Do
+        ' Si dice END, cortamos
+        If UCase$(nroNotif) = "END" Then Exit Do
+
+        ' ---------- IW53 ----------
+        session.StartTransaction "IW53"
+        session.findById("wnd[0]/usr/ctxtRIWO00-QMNUM").Text = nroNotif
         session.findById("wnd[0]").sendVKey 0
-    
-        ' Retrieve values from SAP
-        Dim os As String
-        os = session.findById("wnd[0]/usr/subSCREEN_1:SAPLIQS0:1060/txtVIQMEL-AUFNR").Text
-    
-        ' Check if the retrieved values are empty
+
+        ' Leer OS
+        On Error Resume Next
+        os = session.findById( _
+               "wnd[0]/usr/subSCREEN_1:SAPLIQS0:1060/" & _
+               "txtVIQMEL-AUFNR").Text
+        On Error GoTo ErrorHandler
+
         If os <> "" Then
-            c.Next(1, 1).Value = os
+            wsActive.Cells(i, "D").Value = os
         Else
-            c.Next(1, 1).Value = "OS sin crear"
+            wsActive.Cells(i, "D").Value = "OS sin crear"
         End If
-    
-    Next c
-    
-    ' Return to SAP home screen
-    session.findById("wnd[0]").sendVKey 15  ' VKey 15 is typically used to go back to the home screen or initial screen
-    ' Display a completion message
+
+        i = i + 1
+    Loop
+
+    ' Volver a la pantalla inicial de SAP
+    On Error Resume Next
+    session.findById("wnd[0]").sendVKey 15
+    On Error GoTo 0
+
     MsgBox "Tarea completada.", vbInformation, "Información"
-    
     Exit Sub
 
-    
+' =======================
+'   MANEJO DE ERRORES
+' =======================
 ErrorHandler:
-    MsgBox "Necesitas abrir SAP.", vbCritical, "Error de Conexión"
-
+    If CheckEscape(Err.Number) Then
+        ' Cancelado por ESC
+        On Error Resume Next
+        session.findById("wnd[0]").sendVKey 15
+        On Error GoTo 0
+        Exit Sub
+    Else
+        If Err.Number = 18 Then
+            Err.Clear
+            Resume Next
+        Else
+            MsgBox "Error inesperado: " & Err.Description, _
+                   vbCritical, "Error en buscarOS"
+            Resume Next
+        End If
+    End If
 End Sub
 
-'created by Maca Armijo
+

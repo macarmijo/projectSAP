@@ -106,8 +106,13 @@ ErrorHandler:
         On Error GoTo 0
         Exit Sub
     Else
-        MsgBox "Error inesperado: " & Err.Description, _
-               vbCritical, "Error en buscarNroMaterial"
-        Resume Next
+        If Err.Number = 18 Then
+            Err.Clear
+            Resume Next
+        Else
+            MsgBox "Error inesperado: " & Err.Description, _
+            vbCritical, "Error en buscarNroMaterial"
+            Resume Next
+        End If
     End If
 End Sub
