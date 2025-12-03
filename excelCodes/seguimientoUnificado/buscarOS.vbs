@@ -15,7 +15,11 @@ Sub buscarOS()
     Set session = ObtenerSesionSAP()
     If session Is Nothing Then Exit Sub
 
-    i = 3   ' Primera fila con datos en columna C
+    ' Primera fila con datos en columna C - opcion para que el usuario pueda arrancar el script desde otra linea
+    i = Trim(CStr(wsActive.Cells(1, "O").Value))
+    If (i < 3) Then
+        MsgBox "Debe corregir el inicio del sciprt! No puede ser un numero menor a 3", vbCritical
+    End If
 
     ' LOOP SEGURO HASTA "END"
     Do
@@ -24,7 +28,7 @@ Sub buscarOS()
         ' Si está vacío, cortamos
         If nroNotif = "" Then Exit Do
         ' Si dice END, cortamos
-        If UCase$(nroNotif) = "END" Then Exit Do
+        If UCase(nroNotif) = "END" Then Exit Do
 
         ' ---------- IW53 ----------
         session.StartTransaction "IW53"
